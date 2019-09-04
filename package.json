@@ -1,8 +1,8 @@
 {
-  "name": "app",
+  "name": "Tinyapp",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "express_server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
