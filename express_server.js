@@ -9,27 +9,27 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
 //5 gererateRandomString()
-function generateRandomString(n) {
-    // Map to store 62 possible characters
-    let map = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let shortUrl = "";
+const generateRandomString = function(n) {
+  // Map to store 62 possible characters
+  let map = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let shortUrl = "";
   
-    // Convert given integer id to a base 62 number
-    while (n){
-      let index = Math.floor(Math.random() * Math.floor(62));
-      shortUrl +=map[index];
-      n -- ; 
-    }
+  // Convert given integer id to a base 62 number
+  while (n) {
+    let index = Math.floor(Math.random() * Math.floor(62));
+    shortUrl += map[index];
+    n --;
+  }
 
-    return shortUrl;
-}
+  return shortUrl;
+};
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
-// 1. check if the server is response-able / successfully set 
+// 1. check if the server is response-able / successfully set
 // 1.1 read HOME route
 app.get("/",(req, res) => {
   res.send("Hello!");
@@ -48,15 +48,15 @@ app.get("/urls", (req, res) => {
 });
 
 // 3.1 add a new GET route
-// if we place this route after the /urls/:id definition, 
+// if we place this route after the /urls/:id definition,
 // any calls to /urls/new will be handled by app.get("/urls/:id", ...)
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
 // 4.1 add a new POST route
-// When our browser submits a POST request, 
-// the data in the request body is sent as a Buffer. While this data type is great for transmitting data, it's not readable for us humans. 
+// When our browser submits a POST request,
+// the data in the request body is sent as a Buffer. While this data type is great for transmitting data, it's not readable for us humans.
 app.post("/urls", (req, res) => {
   // log the content of the specified id in <input>
   console.log(req.body);  // Log the POST request body to the console
@@ -67,13 +67,13 @@ app.post("/urls", (req, res) => {
   urlDatabase[shortURL] = req.body.longURL;
 });
 
-  // 7 it receives a POST request to /urls it responds with a redirection to /urls/:shortURL, where shortURL is the random string we generated.
-  app.get("/u/:shortURL", (req, res) => {
-    let shortURL = req.params.shortURL;
-    const longURL = urlDatabase[shortURL];
-    console.log(longURL);
-    res.redirect(longURL);
-  });
+// 7 it receives a POST request to /urls it responds with a redirection to /urls/:shortURL, where shortURL is the random string we generated.
+app.get("/u/:shortURL", (req, res) => {
+  let shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL];
+  console.log(longURL);
+  res.redirect(longURL);
+});
 
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: req.params.longURL };
