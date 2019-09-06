@@ -47,12 +47,7 @@ app.get("/urls.json", (req, res) => {
 app.get("/urls", (req, res) => {
   let templateVars = {};
   // 2.1.1 declare the variable as an object
-  if(req.body.username){
-    templateVars = { urls: urlDatabase, username: req.cookies["username"] };
-  }else {
-    templateVars = { urls: urlDatabase, username: "" };
-    // res.redirect('/urls');
-  }
+  templateVars = { urls: urlDatabase, username: req.cookies["username"] };
   // console.log(username);
   res.render("urls_index", templateVars);
 });
@@ -98,18 +93,17 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect('/urls');
 });
 
-// app.get('/login', function (req, res) {
-//   // Cookies that have not been signed
-//   console.log('Cookies: ', req.cookies)
-
-//   // Cookies that have been signed
-//   console.log('Signed Cookies: ', req.signedCookies)
-// })
-
 app.post("/login", (req, res) => {
   let username = req.body.username;
   // set the cookie here
   res.cookie('username', username);
+  res.redirect('/urls');
+});
+
+app.post("/logout", (req, res) => {
+  let username = req.body.username;
+  // set the cookie here
+  res.clearCookie('username');
   res.redirect('/urls');
 });
 
