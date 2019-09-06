@@ -7,6 +7,9 @@ app.set("view engine", "ejs");
 // 4
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
+// 9 need cookieParser middleware before we can do anything with cookies
+var cookieParser = require('cookie-parser');
+app.use(cookieParser());
 
 //5 gererateRandomString()
 const generateRandomString = function(n) {
@@ -85,6 +88,22 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
   delete urlDatabase[shortURL];
+  res.redirect('/urls');
+});
+
+// app.get('/login', function (req, res) {
+//   // Cookies that have not been signed
+//   console.log('Cookies: ', req.cookies)
+
+//   // Cookies that have been signed
+//   console.log('Signed Cookies: ', req.signedCookies)
+// })
+
+app.post("/login", (req, res) => {
+  let username = req.body.username;
+  console.log(username);
+  // set the cookie here
+  res.cookie('username', username);
   res.redirect('/urls');
 });
 
