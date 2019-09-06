@@ -7,6 +7,9 @@ app.set("view engine", "ejs");
 // 4
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
+// 9 need cookieParser middleware before we can do anything with cookies
+var cookieParser = require('cookie-parser');
+app.use(cookieParser());
 
 //5 gererateRandomString()
 const generateRandomString = function(n) {
@@ -42,8 +45,10 @@ app.get("/urls.json", (req, res) => {
 
 // 2.1 add a new route handler for "/urls"
 app.get("/urls", (req, res) => {
+  let templateVars = {};
   // 2.1.1 declare the variable as an object
-  let templateVars = { urls: urlDatabase };
+  templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+  // console.log(username);
   res.render("urls_index", templateVars);
 });
 
@@ -85,6 +90,20 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
   delete urlDatabase[shortURL];
+  res.redirect('/urls');
+});
+
+app.post("/login", (req, res) => {
+  let username = req.body.username;
+  // set the cookie here
+  res.cookie('username', username);
+  res.redirect('/urls');
+});
+
+app.post("/logout", (req, res) => {
+  let username = req.body.username;
+  // set the cookie here
+  res.clearCookie('username');
   res.redirect('/urls');
 });
 
