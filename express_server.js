@@ -32,15 +32,44 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+
 // 1. check if the server is response-able / successfully set
 // 1.1 read HOME route
 app.get("/",(req, res) => {
   res.send("Hello!");
 });
 
-// 10
+// 10 registration form
 app.get("/register", (req, res) => {
   res.render("register");
+});
+
+app.post("/register", (req, res) => {
+  // add a new user tp the global users object: id, email, password
+  // get a random user ID
+  let id = generateRandomString(6);
+  // adding the user
+  let email = req.body.email;
+  let password = req.body.password;
+  user[id].id = id;
+  user[id].email = email;
+  user[id].password = password;
+  // set a user_id cookie containing the user's newly generated ID.
+  res.cookie('username', id);
+  // Redirect the user to the /urls page.
+  res.redirect('/urls');
 });
 
 // 1.2 read URLS route
@@ -69,9 +98,6 @@ app.get("/urls/new", (req, res) => {
 // When our browser submits a POST request,
 // the data in the request body is sent as a Buffer. While this data type is great for transmitting data, it's not readable for us humans.
 app.post("/urls", (req, res) => {
-  // log the content of the specified id in <input>
-  // console.log(req.body);  // Log the POST request body to the console
-  // res.send("Ok");         // Respond with 'Ok' (we will replace this)
   // 6.1 generate ramdom short URL
   let shortURL = generateRandomString(6);
   // 6.2 pair up and store
