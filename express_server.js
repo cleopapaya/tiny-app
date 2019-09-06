@@ -50,7 +50,8 @@ app.get("/urls", (req, res) => {
   if(req.body.username){
     templateVars = { urls: urlDatabase, username: req.cookies["username"] };
   }else {
-    templateVars = { urls: urlDatabase };
+    templateVars = { urls: urlDatabase, username: "" };
+    // res.redirect('/urls');
   }
   // console.log(username);
   res.render("urls_index", templateVars);

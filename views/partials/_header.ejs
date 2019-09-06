@@ -13,7 +13,11 @@
     <form method="POST" action="/login">
       <label>Any Username :</label>
       <input id="username" name="username" />
-      <button type="submit">Sign in</button>
+      <% if (!username) { %>
+        <button type="submit">Sign in</button>
+      <% } %>
+        <button type="submit">Log Out</button>
+      
     </form>
   </nav>
 </header>
