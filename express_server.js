@@ -45,8 +45,14 @@ app.get("/urls.json", (req, res) => {
 
 // 2.1 add a new route handler for "/urls"
 app.get("/urls", (req, res) => {
+  let templateVars = {};
   // 2.1.1 declare the variable as an object
-  let templateVars = { urls: urlDatabase };
+  if(req.body.username){
+    templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+  }else {
+    templateVars = { urls: urlDatabase };
+  }
+  // console.log(username);
   res.render("urls_index", templateVars);
 });
 
@@ -101,7 +107,6 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 app.post("/login", (req, res) => {
   let username = req.body.username;
-  console.log(username);
   // set the cookie here
   res.cookie('username', username);
   res.redirect('/urls');
