@@ -47,8 +47,9 @@ const users = {
 
 const findEmail = function(email){
   for (let id in users){
+    console.log(users[id].email);
     if(users[id].email === email){
-      return true;
+      return users[id].email;
     }
   }
   return false;
@@ -62,32 +63,37 @@ app.get("/",(req, res) => {
 
 // 10 registration form
 app.get("/register", (req, res) => {
-  res.render("register");
-  // TODO: May need add ASYNC Flow here
-  if(!req.body.password || !req.body.email){
-    res.send("404 Not Found");
-  }else if(findEmail(req.body.email)){
-    res.send("404 Not Found");
+  if(req.cookies["username"]){
+    res.redirect('/urls');
+    return;
   }
+  // TODO: may need to render the logged in username here too
+  res.render("register");
 });
 
 app.post("/register", (req, res) => {
-  // add a new user tp the global users object: id, email, password
-  let user = {};
-  // get a random user ID
-  let id = generateRandomString(6);
-  // adding the user
-  let email = req.body.email;
-  let password = req.body.password;
-  user[id] = id;
-  user[email] = email;
-  user[password] = password;
-  users[id] = user;
-  console.log(user);
-  // set a user_id cookie containing the user's newly generated ID.
-  res.cookie('user_id', id);
-  // Redirect the user to the /urls page.
-  res.redirect('/urls');
+  if (!req.body.email || !req.body.password) {
+    res.redirect('/register?failed=true');
+  }else if (findEmail(req.body.email)){
+    res.redirect('/register?failed=true');
+  }else{
+    // add a new user tp the global users object: id, email, password
+    let user = {};
+    // get a random user ID
+    let id = generateRandomString(6);
+    // adding the user
+    let email = req.body.email;
+    let password = req.body.password;
+    user[id] = id;
+    user["email"] = email;
+    user["password"] = password;
+    users[id] = user;
+    console.log(user);
+    // set a user_id cookie containing the user's newly generated ID.
+    res.cookie('username', id);
+    // Redirect the user to the /urls page.
+    res.redirect('/urls');
+  }
 });
 
 // 1.2 read URLS route
