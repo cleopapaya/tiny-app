@@ -8,7 +8,7 @@ app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 // 9 need cookieParser middleware before we can do anything with cookies
-var cookieParser = require('cookie-parser');
+let cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
 //5 gererateRandomString()
@@ -32,89 +32,30 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
-const users = { 
+const users = {
   "userRandomID": {
-    id: "userRandomID", 
-    email: "user@example.com", 
+    id: "userRandomID",
+    email: "user@example.com",
     password: "purple-monkey-dinosaur"
   },
- "user2RandomID": {
-    id: "user2RandomID", 
-    email: "user2@example.com", 
+  "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
     password: "dishwasher-funk"
   }
-}
+};
 
 console.log(users);
 
-const findEmail = function(email){
-  for (let id in users){
+const findEmail = function(email) {
+  for (let id in users) {
     console.log(users[id].email);
-    if(users[id].email === email){
+    if (users[id].email === email) {
       return users[id];
     }
   }
   return false;
 };
-
-
-
-
-
-
-
-
-
-// 1. check if the server is response-able / successfully set
-// 1.1 read HOME route -- REMOVE
-app.get("/",(req, res) => {
-  res.send("Hello!");
-});
-
-// 10 registration form
-app.get("/register", (req, res) => {
-  if(req.cookies["user_id"]){
-    res.redirect('/urls');
-    return;
-  }
-  const templateVars = {
-    user_id: req.cookies["user_id"],
-  };
-  // TODO: may need to render the logged in username here too
-  res.render("register", templateVars);
-});
-
-app.post("/register", (req, res) => {
-
-  if (!req.body.email || !req.body.password) {
-    res.redirect('/register?failed=true');
-
-  }else if (findEmail(req.body.email)){
-    res.redirect('/register?failed=true');
-
-  }else{
-    // add a new user tp the global users object: id, email, password
-    let user = {};
-    // get a random user ID
-    let id = generateRandomString(6);
-    // adding the user
-    user[id] = id;
-    user["email"] = req.body.email;
-    user["password"] = req.body.password;
-
-    users[id] = user;
-    console.log(user);
-    // set a user_id cookie containing the user's newly generated ID.
-    res.cookie('user_id', id);
-    // Redirect the user to the /urls page.
-    res.redirect('/urls');
-  }
-});
-
-// 1.2 read URLS route -- REMOVE THIS
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
 
 // 2.1 add a new route handler for "/urls"
 app.get("/urls", (req, res) => {
@@ -127,7 +68,7 @@ app.get("/urls", (req, res) => {
 // if we place this route after the /urls/:id definition,
 // any calls to /urls/new will be handled by app.get("/urls/:id", ...)
 app.get("/urls/new", (req, res) => {
-  templateVars = { user: users[req.cookies["user_id"]] };
+  let templateVars = { user: users[req.cookies["user_id"]] };
   res.render("urls_new", templateVars);
 });
 
@@ -162,15 +103,64 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect('/urls');
 });
 
+// 10 registration form
+app.get("/register", (req, res) => {
+  if (req.cookies["user_id"]) {
+    res.redirect('/urls');
+    return;
+  }
+  const templateVars = {
+    user_id: req.cookies["user_id"],
+  };
+  // TODO: may need to render the logged in username here too
+  res.render("register", templateVars);
+});
+
+app.post("/register", (req, res) => {
+
+  if (!req.body.email || !req.body.password) {
+    res.redirect('/register?failed=true');
+
+  } else if (findEmail(req.body.email)) {
+    res.redirect('/register?failed=true');
+
+  } else {
+    // add a new user tp the global users object: id, email, password
+    let user = {};
+    // get a random user ID
+    let id = generateRandomString(6);
+    // adding the user
+    user[id] = id;
+    user["email"] = req.body.email;
+    user["password"] = req.body.password;
+
+    users[id] = user;
+    console.log(user);
+    // set a user_id cookie containing the user's newly generated ID.
+    res.cookie('user_id', id);
+    // Redirect the user to the /urls page.
+    res.redirect('/urls');
+  }
+});
+
+app.get("/login", (req, res) => {
+  if (req.cookies["user_id"]) {
+    res.redirect('/urls');
+  }
+  let templateVars = { user: users[req.cookies["user_id"]] };
+  res.render("login", templateVars);
+});
+
 app.post("/login", (req, res) => {
-  let user_email = req.body.email;
-  if(findEmail(user_email)){
-    // set the cookie here
-    res.cookie('user_id', findEmail(user_email).id);
-  }else{
+
+  if (!req.body.email || !req.body.password) {
+    res.redirect('/login?failed=true');
+  } else if (findEmail(req.body.email)) {
+    res.cookie('user_id', findEmail(req.body.email).id);
+    res.redirect('/urls');
+  } else {
     res.redirect('/register');
   }
-  res.redirect('/urls');
 });
 
 app.post("/logout", (req, res) => {
@@ -179,13 +169,8 @@ app.post("/logout", (req, res) => {
   res.redirect('/urls');
 });
 
-// // 1.3 read HELLO route
-// app.get("/hello", (req, res) => {
-//   res.send("<html><body>Hello <b>World</b></body></html>\n");
-// });
-
 app.get('*', (req, res) => {
-  response.redirect('/urls');
+  res.redirect('/urls');
 });
 
 app.listen(PORT, () => {

@@ -11,9 +11,12 @@
       </div>
     </div>
     <% if (!user) { %>
-    <form method="POST" action="/login">
+    <!-- <form method="POST" action="/login">
       <label>Email :</label>
       <input id="email" name="email" />
+      <button class="btn btn-primary" type="submit">Login</button>
+    </form> -->
+    <form style="margin-left: 10px; margin-right: 10px" action="/login">
       <button class="btn btn-primary" type="submit">Login</button>
     </form>
     <% } else{ %>  
@@ -22,5 +25,7 @@
         <button class="btn btn-primary" type="submit">Log out</button>
     </form>
     <% } %>
-  </nav>
+    <form style="margin-left: 10px; margin-right: 10px" action="/register">
+      <button class="btn btn-primary" type="submit">Register</button>
+    </form>
 </header
