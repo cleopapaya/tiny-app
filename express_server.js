@@ -8,7 +8,7 @@ app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 // 9 need cookieParser middleware before we can do anything with cookies
-var cookieParser = require('cookie-parser');
+let cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
 //5 gererateRandomString()
@@ -32,23 +32,35 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
-// 1. check if the server is response-able / successfully set
-// 1.1 read HOME route
-app.get("/",(req, res) => {
-  res.send("Hello!");
-});
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+  "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
+};
 
-// 1.2 read URLS route
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
+console.log(users);
+
+const findEmail = function(email) {
+  for (let id in users) {
+    console.log(users[id].email);
+    if (users[id].email === email) {
+      return users[id];
+    }
+  }
+  return false;
+};
 
 // 2.1 add a new route handler for "/urls"
 app.get("/urls", (req, res) => {
-  let templateVars = {};
   // 2.1.1 declare the variable as an object
-  templateVars = { urls: urlDatabase, username: req.cookies["username"] };
-  // console.log(username);
+  let templateVars = { urls: urlDatabase, user: users[req.cookies["user_id"]]};
   res.render("urls_index", templateVars);
 });
 
@@ -56,16 +68,14 @@ app.get("/urls", (req, res) => {
 // if we place this route after the /urls/:id definition,
 // any calls to /urls/new will be handled by app.get("/urls/:id", ...)
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  let templateVars = { user: users[req.cookies["user_id"]] };
+  res.render("urls_new", templateVars);
 });
 
 // 4.1 add a new POST route
 // When our browser submits a POST request,
 // the data in the request body is sent as a Buffer. While this data type is great for transmitting data, it's not readable for us humans.
 app.post("/urls", (req, res) => {
-  // log the content of the specified id in <input>
-  // console.log(req.body);  // Log the POST request body to the console
-  // res.send("Ok");         // Respond with 'Ok' (we will replace this)
   // 6.1 generate ramdom short URL
   let shortURL = generateRandomString(6);
   // 6.2 pair up and store
@@ -82,7 +92,7 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: req.params.longURL };
+  let templateVars = { shortURL: req.params.shortURL, longURL: req.params.longURL, user: users[req.cookies["user_id"]] };
   res.render("urls_show", templateVars);
 });
 
@@ -93,27 +103,72 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect('/urls');
 });
 
+// 10 registration form
+app.get("/register", (req, res) => {
+  if (req.cookies["user_id"]) {
+    res.redirect('/urls');
+  }
+  const templateVars = {
+    user_id: req.cookies["user_id"],
+  };
+  res.render("register", templateVars);
+});
+
+app.post("/register", (req, res) => {
+
+  if (!req.body.email || !req.body.password) {
+    res.redirect('/register?failed=true');
+
+  } else if (findEmail(req.body.email)) {
+    res.redirect('/register?failed=true');
+
+  } else {
+    // add a new user tp the global users object: id, email, password
+    let user = {};
+    // get a random user ID
+    let id = generateRandomString(6);
+    // adding the user
+    user[id] = id;
+    user["email"] = req.body.email;
+    user["password"] = req.body.password;
+
+    users[id] = user;
+    console.log(user);
+    // set a user_id cookie containing the user's newly generated ID.
+    res.cookie('user_id', id);
+    // Redirect the user to the /urls page.
+    res.redirect('/urls');
+  }
+});
+
+app.get("/login", (req, res) => {
+  if (req.cookies["user_id"]) {
+    res.redirect('/urls');
+  }
+  let templateVars = { user: users[req.cookies["user_id"]] };
+  res.render("login", templateVars);
+});
+
 app.post("/login", (req, res) => {
-  let username = req.body.username;
-  // set the cookie here
-  res.cookie('username', username);
-  res.redirect('/urls');
+
+  if (!req.body.email || !req.body.password) {
+    res.sendStatus(403);
+  } else if (findEmail(req.body.email) && findEmail(req.body.email).password === req.body.password) {
+    res.cookie('user_id', findEmail(req.body.email).id);
+    res.redirect('/urls');
+  } else {
+    res.sendStatus(403);
+  }
 });
 
 app.post("/logout", (req, res) => {
-  let username = req.body.username;
   // set the cookie here
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect('/urls');
 });
 
-// // 1.3 read HELLO route
-// app.get("/hello", (req, res) => {
-//   res.send("<html><body>Hello <b>World</b></body></html>\n");
-// });
-
-app.get('*', (request, response) => {
-  response.redirect('/urls');
+app.get('*', (req, res) => {
+  res.redirect('/urls');
 });
 
 app.listen(PORT, () => {
