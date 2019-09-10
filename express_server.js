@@ -7,9 +7,14 @@ app.set("view engine", "ejs");
 // 4
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
+
 // 9 need cookieParser middleware before we can do anything with cookies
 let cookieParser = require('cookie-parser');
 app.use(cookieParser());
+
+const bcrypt = require('bcrypt');
+// const password = "purple-monkey-dinosaur"; // found in the req.params object
+// const hashedPassword = bcrypt.hashSync(password, 10);
 
 //5 gererateRandomString()
 const generateRandomString = function(n) {
@@ -150,7 +155,7 @@ app.post("/register", (req, res) => {
     // adding the user
     user[id] = id;
     user["email"] = req.body.email;
-    user["password"] = req.body.password;
+    user["password"] = bcrypt.hashSync(req.body.password);
 
     users[id] = user;
     console.log(user);
@@ -175,7 +180,7 @@ app.post("/login", (req, res) => {
 
   if (!req.body.email || !req.body.password) {
     res.sendStatus(403);
-  } else if (findEmail(req.body.email) && findEmail(req.body.email).password === req.body.password) {
+  } else if (findEmail(req.body.email) && bcrpt.compareSync(req.body.password, findEmail(req.body.email).password)) {
     res.cookie('user_id', findEmail(req.body.email).id);
     res.redirect('/urls');
   } else {
