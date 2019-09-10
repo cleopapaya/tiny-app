@@ -157,7 +157,7 @@ app.post("/login", (req, res) => {
     res.cookie('user_id', findEmail(req.body.email).id);
     res.redirect('/urls');
   } else {
-    res.sendStatus(403);
+    res.redirect('/register');
   }
 });
 
