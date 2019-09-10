@@ -32,6 +32,14 @@ const urlDatabase = {
   "9sm5xK": {longURL:"http://www.google.com", userID: "aJ48lW"}
 };
 
+const createURL = (shortUrl, longUrl, userId) => {
+  urlDatabase[shortUrl] = {
+    longURL: longUrl,
+    userID: userId
+  };
+};
+console.log(urlDatabase);
+
 const users = {
   "userRandomID": {
     id: "userRandomID",
@@ -57,8 +65,19 @@ const findEmail = function(email) {
   return false;
 };
 
+const urlsForUser = function(userId) {
+  let output = [];
+  for (let shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].id === userId) {
+      output.push(urlDatabase[shortURL]);
+    }
+  }
+  return output;
+};
+
 // 2.1 add a new route handler for "/urls"
 app.get("/urls", (req, res) => {
+  // let filteredUrls = urlsForUser(req.cookies["user_id"]);
   // 2.1.1 declare the variable as an object
   let templateVars = { urls: urlDatabase, user: users[req.cookies["user_id"]]};
   res.render("urls_index", templateVars);
@@ -80,6 +99,7 @@ app.post("/urls", (req, res) => {
   let shortURL = generateRandomString(6);
   // 6.2 pair up and store
   urlDatabase[shortURL] = req.body.longURL;
+  // urlDatabase[shortURL].userID = req.cookies["user_id"];
   res.redirect('/urls');
 });
 
@@ -144,9 +164,11 @@ app.post("/register", (req, res) => {
 app.get("/login", (req, res) => {
   if (req.cookies["user_id"]) {
     res.redirect('/urls');
+  } else {
+    let templateVars = { user: users[req.cookies["user_id"]] };
+    res.render("login", templateVars);
   }
-  let templateVars = { user: users[req.cookies["user_id"]] };
-  res.render("login", templateVars);
+
 });
 
 app.post("/login", (req, res) => {
